@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+sqlalchemy
+jinja2
+aiofiles
+apscheduler
+python-dotenv 
