@@ -198,24 +198,8 @@ cd chainfly-backend
 pytest
 ```
 
-### API Testing
-- Use Swagger UI: http://localhost:8000/docs
-- Postman collection available
-- Automated tests with pytest
 
-## 📊 Data Structures & Algorithms
 
-### Optimized Data Structures
-- **Maps for O(1) Lookups**: Fast tender/document/reminder retrieval
-- **Efficient Filtering**: Optimized search algorithms
-- **Memory Management**: Proper cleanup and garbage collection
-- **State Optimization**: Minimal re-renders with React Context
-
-### Algorithm Implementations
-- **Search Algorithm**: Case-insensitive text search
-- **Date Sorting**: Efficient date comparison and sorting
-- **File Size Calculation**: Optimized byte conversion
-- **Reminder Scheduling**: Priority-based scheduling
 
 ## 🔧 Development
 
