@@ -118,7 +118,6 @@ chainfly/
 ### Tenders
 - `GET /tenders/search` - Search tenders
 - `GET /tenders` - Get all tenders
-- `POST /tenders` - Create new tender
 - `PUT /tenders/{id}` - Update tender
 - `DELETE /tenders/{id}` - Delete tender
 
@@ -229,49 +228,6 @@ npm run build           # Build frontend for production
 npm run preview         # Preview production build
 ```
 
-### Code Quality
-- **ESLint**: JavaScript/TypeScript linting
-- **Prettier**: Code formatting
-- **TypeScript**: Static type checking
-- **Python Black**: Python code formatting
-
-## 🚀 Deployment
-
-### Frontend Deployment
-```bash
-npm run build
-# Deploy dist/ folder to your hosting service
-```
-
-### Backend Deployment
-```bash
-# Using Docker
-docker build -t chainfly-backend .
-docker run -p 8000:8000 chainfly-backend
-
-# Using traditional hosting
-pip install -r requirements.txt
-gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue on GitHub
-- Check the documentation at `/docs`
-- Review the API documentation at `http://localhost:8000/docs`
 
 ---
 
