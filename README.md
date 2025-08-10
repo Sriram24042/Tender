@@ -12,7 +12,6 @@ A modern, full-stack tender management system built with React, TypeScript, and 
 - **Real-time Updates**: Optimized state management with React Context
 
 ### 🔧 Technical Features
-- **DSA Optimizations**: Efficient data structures (Maps for O(1) lookups)
 - **Type Safety**: Full TypeScript implementation
 - **API Integration**: RESTful API with FastAPI
 - **Email Automation**: Gmail SMTP integration with APScheduler
