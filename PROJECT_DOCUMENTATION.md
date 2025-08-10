@@ -48,7 +48,7 @@ Chainfly is a backend system for managing tenders, documents, and reminders, wit
 
 ## Email Notifications
 - Uses Gmail SMTP to send reminder emails.
-- Credentials are currently hardcoded for development; use environment variables for production.
+- Used environment variables for Credentials in  production.
 
 ---
 
@@ -56,16 +56,3 @@ Chainfly is a backend system for managing tenders, documents, and reminders, wit
 - Uses SQLite for local development.
 - Reminders are stored in `reminders.db`.
 
----
-
-## Testing
-- Use Postman or Swagger UI (`/docs`) to test endpoints.
-- For quick email tests, set `test=true` in the reminders endpoint.
-
----
-
-## Future Improvements
-- Add authentication and user management.
-- Implement CRUD for tenders and documents.
-- Improve error handling and logging.
-- Move sensitive credentials to environment variables. 

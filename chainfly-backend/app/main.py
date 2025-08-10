@@ -11,23 +11,40 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Add CORS middleware
+# Get environment variables for deployment
+PORT = int(os.environ.get("PORT", 8000))
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
+
+# Add CORS middleware with dynamic origins
+allowed_origins = [
+    "http://localhost:5173", 
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174", 
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
+    "http://localhost:5176",
+    "http://127.0.0.1:5176",
+    "http://localhost:5177",
+    "http://127.0.0.1:5177",
+    "http://localhost:5178",
+    "http://127.0.0.1:5178",
+    "https://tendermanagementsystem.vercel.app",
+    "https://*.vercel.app",
+    "https://*.vercel.app/*",
+    "https://*.onrender.com",  # Render domains
+    "https://*.railway.app",   # Railway domains
+    "https://*.herokuapp.com", # Heroku domains
+]
+
+# Add production origins if available
+if ENVIRONMENT == "production":
+    # Add your production domain here
+    pass
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173", 
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174", 
-        "http://localhost:5175",
-        "http://127.0.0.1:5175",
-        "http://localhost:5176",
-        "http://127.0.0.1:5176",
-        "http://localhost:5177",
-        "http://127.0.0.1:5177",
-        "http://localhost:5178",
-        "http://127.0.0.1:5178"
-    ],  # Vite default ports and common alternatives
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,7 +53,11 @@ app.add_middleware(
 # Root endpoint
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to Chainfly API! Visit /docs for interactive API documentation."}
+    return {
+        "message": "Welcome to Chainfly API! Visit /docs for interactive API documentation.",
+        "environment": ENVIRONMENT,
+        "port": PORT
+    }
 
 # Mount static files for uploads
 uploads_dir = os.path.join(os.getcwd(), "uploads")
@@ -58,7 +79,11 @@ async def download_file(filename: str):
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="File not found")
 
-print("Chainfly API server is starting...")
-print("API Documentation available at: http://127.0.0.1:8000/docs")
-print("API Base URL: http://127.0.0.1:8000")
-print("Frontend URL: http://localhost:5173")
+if __name__ == "__main__":
+    import uvicorn
+    print("Chainfly API server is starting...")
+    print(f"Environment: {ENVIRONMENT}")
+    print(f"Port: {PORT}")
+    print(f"API Documentation available at: http://127.0.0.1:{PORT}/docs")
+    print(f"API Base URL: http://127.0.0.1:{PORT}")
+    uvicorn.run(app, host="0.0.0.0", port=PORT)
