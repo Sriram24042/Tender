@@ -2,7 +2,5 @@
 
 echo "🚀 Starting application from root directory..."
 
-# Navigate to backend directory and start
-cd chainfly-backend
-chmod +x start.sh
-./start.sh
+# Start the application using the correct module path
+exec gunicorn chainfly-backend.app.main:app --bind 0.0.0.0:$PORT --workers 1 --worker-class uvicorn.workers.UvicornWorker --timeout 120
