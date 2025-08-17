@@ -4,7 +4,6 @@ services:
     name: chainfly-backend
     env: python
     plan: free
-    rootDir: chainfly-backend
     buildCommand: chmod +x build.sh && ./build.sh
     startCommand: chmod +x start.sh && ./start.sh
     envVars:
