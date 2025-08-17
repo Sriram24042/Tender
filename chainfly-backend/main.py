@@ -4,11 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 
-# Import routes from backend directory
-import sys
-sys.path.append('./chainfly-backend')
-
-from chainfly_backend.app.routes import tenders, documents, reminders
+# Import routes directly (since we're in the same directory)
+from app.routes import tenders, documents, reminders
 
 app = FastAPI(
     title="Chainfly Tender & Document API",
@@ -61,7 +58,7 @@ def read_root():
     }
 
 # Mount static files for uploads
-uploads_dir = os.path.join(os.getcwd(), "chainfly-backend", "uploads")
+uploads_dir = os.path.join(os.getcwd(), "uploads")
 if os.path.exists(uploads_dir):
     app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
