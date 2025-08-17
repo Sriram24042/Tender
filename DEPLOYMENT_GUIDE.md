@@ -1,162 +1,172 @@
-# 🚀 Chainfly Free Deployment Guide
+# Render Deployment Guide
 
-This guide will help you deploy your Chainfly application for free using various hosting platforms.
+This guide will help you deploy your Chainfly application to Render.
 
-## 🌟 Option 1: Render (Recommended - Easiest)
+## Prerequisites
 
-### Backend Deployment on Render
+1. A GitHub account with your code repository
+2. A Render account (free tier available)
+3. Your application code pushed to GitHub
 
-1. **Sign up for Render** (https://render.com) - Free account
-2. **Connect your GitHub repository**
-3. **Create a new Web Service**
-4. **Configure the service:**
-   - **Name**: `chainfly-backend`
-   - **Environment**: `Python`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - **Plan**: Free
+## Step 1: Prepare Your Repository
 
-5. **Environment Variables:**
+Ensure your repository has the following structure:
+```
+tender/
+├── chainfly-backend/     # Backend API
+├── frontend/            # React frontend
+├── render.yaml          # Render configuration
+└── README.md
+```
+
+## Step 2: Deploy to Render
+
+### Option A: Using render.yaml (Recommended)
+
+1. **Connect Repository:**
+   - Go to [Render Dashboard](https://dashboard.render.com/)
+   - Click "New +" → "Blueprint"
+   - Connect your GitHub repository
+   - Select the repository containing your code
+
+2. **Deploy:**
+   - Render will automatically detect the `render.yaml` file
+   - Click "Apply" to deploy both services
+   - Wait for the build and deployment to complete
+
+### Option B: Manual Deployment
+
+#### Deploy Backend First:
+
+1. **Create Web Service:**
+   - Go to [Render Dashboard](https://dashboard.render.com/)
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository
+   - Select the `chainfly-backend` directory
+
+2. **Configure Backend:**
+   - **Name:** `chainfly-backend`
+   - **Environment:** `Python 3`
+   - **Build Command:** `chmod +x build.sh && ./build.sh`
+   - **Start Command:** `chmod +x start.sh && ./start.sh`
+   - **Plan:** Free
+
+3. **Environment Variables:**
    - `ENVIRONMENT`: `production`
-   - `PORT`: `10000` (Render will set this automatically)
+   - `PORT`: `8000`
 
-6. **Deploy!** Your backend will be available at: `https://chainfly-backend.onrender.com`
+4. **Deploy:**
+   - Click "Create Web Service"
+   - Wait for deployment to complete
+   - Note the backend URL (e.g., `https://chainfly-backend.onrender.com`)
 
-### Frontend Deployment on Render
+#### Deploy Frontend:
 
-1. **Create a new Static Site**
-2. **Configure:**
-   - **Name**: `chainfly-frontend`
-   - **Build Command**: `npm run build`
-   - **Publish Directory**: `dist`
-   - **Plan**: Free
+1. **Create Static Site:**
+   - Click "New +" → "Static Site"
+   - Connect your GitHub repository
+   - Select the `frontend` directory
 
-## 🌟 Option 2: Railway
+2. **Configure Frontend:**
+   - **Name:** `chainfly-frontend`
+   - **Build Command:** `chmod +x build.sh && ./build.sh`
+   - **Publish Directory:** `dist`
+   - **Plan:** Free
 
-### Backend Deployment on Railway
+3. **Environment Variables:**
+   - `REACT_APP_API_URL`: Your backend URL from step 1
 
-1. **Sign up for Railway** (https://railway.app) - Free tier with $5 credit/month
-2. **Connect your GitHub repository**
-3. **Deploy the backend service**
-4. **Set environment variables:**
-   - `ENVIRONMENT`: `production`
-   - `PORT`: Railway will set this automatically
+4. **Deploy:**
+   - Click "Create Static Site"
+   - Wait for deployment to complete
 
-### Frontend Deployment on Railway
+## Step 3: Update Frontend API Configuration
 
-1. **Deploy as a static site**
-2. **Build command**: `npm run build`
-3. **Output directory**: `dist`
+After deployment, update your frontend API configuration:
 
-## 🌟 Option 3: Vercel + Render
+1. **Update API Base URL:**
+   - In `frontend/src/services/api.ts`
+   - Change the base URL to your backend Render URL
+   - Example: `https://chainfly-backend.onrender.com`
 
-### Frontend on Vercel
+2. **Redeploy Frontend:**
+   - Push changes to GitHub
+   - Render will automatically redeploy
 
-1. **Sign up for Vercel** (https://vercel.com) - Free tier
-2. **Import your GitHub repository**
-3. **Configure build settings:**
-   - **Framework Preset**: Vite
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-   - **Install Command**: `npm install`
+## Step 4: Configure Custom Domain (Optional)
 
-4. **Environment Variables:**
-   - `VITE_API_BASE_URL`: Your Render backend URL
+1. **Add Custom Domain:**
+   - Go to your service settings
+   - Click "Custom Domains"
+   - Add your domain
+   - Configure DNS records as instructed
 
-### Backend on Render
+## Environment Variables
 
-Follow the Render backend deployment steps above.
+### Backend Variables:
+- `ENVIRONMENT`: `production`
+- `PORT`: `8000` (Render sets this automatically)
+- `DATABASE_URL`: If using external database
 
-## 🔧 Pre-deployment Setup
+### Frontend Variables:
+- `REACT_APP_API_URL`: Your backend Render URL
 
-### 1. Update Backend CORS (Already done)
-Your backend is configured to accept requests from various domains.
-
-### 2. Environment Variables
-Create `.env` files in your frontend directory:
-
-**Development** (`env.development`):
-```
-VITE_API_BASE_URL=http://localhost:8000
-VITE_ENVIRONMENT=development
-```
-
-**Production** (`env.production`):
-```
-VITE_API_BASE_URL=https://your-backend-url.com
-VITE_ENVIRONMENT=production
-```
-
-### 3. Build and Test Locally
-```bash
-# Backend
-cd chainfly-backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-
-# Frontend
-cd frontend
-npm install
-npm run build
-npm run preview
-```
-
-## 🚀 Quick Deploy Commands
-
-### Render (Recommended)
-```bash
-# 1. Push your code to GitHub
-git add .
-git commit -m "Ready for deployment"
-git push origin main
-
-# 2. Go to Render.com and connect your repo
-# 3. Deploy automatically!
-```
-
-### Vercel Frontend
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-cd frontend
-vercel
-```
-
-## 📱 Post-Deployment
-
-1. **Test your API endpoints** at your backend URL + `/docs`
-2. **Update frontend environment** with your backend URL
-3. **Test the full application**
-4. **Monitor logs** in your hosting platform
-
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Common Issues:
 
-1. **CORS errors**: Check that your backend CORS settings include your frontend domain
-2. **Build failures**: Ensure all dependencies are in `requirements.txt` and `package.json`
-3. **Port issues**: Use `$PORT` environment variable in your start commands
-4. **File uploads**: Ensure your uploads directory is properly configured
+1. **Build Failures:**
+   - Check build logs in Render dashboard
+   - Ensure all dependencies are in requirements.txt
+   - Verify Python version compatibility
 
-### Support:
-- **Render**: Excellent documentation and support
-- **Railway**: Good Discord community
-- **Vercel**: Extensive documentation and examples
+2. **Runtime Errors:**
+   - Check application logs
+   - Verify environment variables
+   - Check file permissions
 
-## 💰 Cost Breakdown
+3. **CORS Issues:**
+   - Update CORS origins in backend
+   - Include your frontend domain
 
-- **Render**: Free tier (750 hours/month for backend, unlimited static hosting)
-- **Railway**: Free tier ($5 credit/month)
-- **Vercel**: Free tier (unlimited static hosting)
+### Logs and Monitoring:
 
-## 🎯 Next Steps
+- **Build Logs:** Available during deployment
+- **Runtime Logs:** Available in service dashboard
+- **Health Checks:** Monitor service status
 
-1. Choose your preferred hosting platform
-2. Follow the deployment steps
-3. Test your deployed application
-4. Set up custom domains (optional)
-5. Configure monitoring and alerts
+## Performance Optimization
 
-Happy deploying! 🚀 
+1. **Enable Auto-Scaling:**
+   - Upgrade to paid plan
+   - Configure auto-scaling rules
+
+2. **CDN:**
+   - Static sites automatically use CDN
+   - Backend can use external CDN
+
+3. **Database:**
+   - Use Render's PostgreSQL service
+   - Configure connection pooling
+
+## Cost Management
+
+- **Free Tier:** 750 hours/month per service
+- **Paid Plans:** Start at $7/month per service
+- **Auto-Sleep:** Free services sleep after 15 minutes of inactivity
+
+## Support
+
+- **Render Documentation:** [docs.render.com](https://docs.render.com/)
+- **Community:** [Render Community](https://community.render.com/)
+- **Status:** [status.render.com](https://status.render.com/)
+
+## Next Steps
+
+After successful deployment:
+
+1. Test all functionality
+2. Set up monitoring and alerts
+3. Configure backups (if using database)
+4. Set up CI/CD pipeline
+5. Monitor performance and costs 

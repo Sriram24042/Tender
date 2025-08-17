@@ -1,109 +1,60 @@
-# Chainfly Render Deployment Script
-# This script helps prepare your project for Render deployment
+# Render Deployment Script for Windows
+# This script helps prepare your application for Render deployment
 
-Write-Host "Preparing Chainfly for Render deployment..." -ForegroundColor Green
+Write-Host "🚀 Preparing Chainfly Application for Render Deployment..." -ForegroundColor Green
 
-# Check if git is initialized
+# Check if git is available
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Host "❌ Git is not installed. Please install Git first." -ForegroundColor Red
+    exit 1
+}
+
+# Check if we're in a git repository
 if (-not (Test-Path ".git")) {
-    Write-Host "Git repository not found. Please initialize git first:" -ForegroundColor Red
-    Write-Host "   git init" -ForegroundColor Yellow
-    Write-Host "   git add ." -ForegroundColor Yellow
-    Write-Host "   git commit -m 'Initial commit'" -ForegroundColor Yellow
-    Write-Host "   git remote add origin <your-github-repo-url>" -ForegroundColor Yellow
+    Write-Host "❌ Not in a git repository. Please navigate to your project root." -ForegroundColor Red
     exit 1
 }
 
-# Check if backend requirements.txt exists
-if (-not (Test-Path "chainfly-backend/requirements.txt")) {
-    Write-Host "Backend requirements.txt not found!" -ForegroundColor Red
-    exit 1
+# Check git status
+$gitStatus = git status --porcelain
+if ($gitStatus) {
+    Write-Host "⚠️  You have uncommitted changes:" -ForegroundColor Yellow
+    Write-Host $gitStatus -ForegroundColor Yellow
+    Write-Host ""
+    $commit = Read-Host "Do you want to commit these changes? (y/n)"
+    
+    if ($commit -eq "y" -or $commit -eq "Y") {
+        $commitMessage = Read-Host "Enter commit message"
+        git add .
+        git commit -m $commitMessage
+        Write-Host "✅ Changes committed successfully!" -ForegroundColor Green
+    }
 }
 
-# Check if frontend package.json exists
-if (-not (Test-Path "frontend/package.json")) {
-    Write-Host "Frontend package.json not found!" -ForegroundColor Red
-    exit 1
+# Check if remote origin exists
+$remoteOrigin = git remote get-url origin 2>$null
+if (-not $remoteOrigin) {
+    Write-Host "❌ No remote origin found. Please add your GitHub repository:" -ForegroundColor Red
+    $repoUrl = Read-Host "Enter your GitHub repository URL"
+    git remote add origin $repoUrl
+    Write-Host "✅ Remote origin added!" -ForegroundColor Green
 }
 
-Write-Host "Project structure looks good!" -ForegroundColor Green
+# Push to GitHub
+Write-Host "📤 Pushing to GitHub..." -ForegroundColor Blue
+git push origin main
 
-# Create .gitignore if it doesn't exist
-if (-not (Test-Path ".gitignore")) {
-    Write-Host "Creating .gitignore file..." -ForegroundColor Yellow
-    $gitignoreContent = @"
-# Python
-__pycache__/
-*.py[cod]
-*`$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual Environment
-venv/
-env/
-ENV/
-
-# Environment variables
-.env
-.env.local
-.env.production
-
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Build outputs
-frontend/dist/
-frontend/build/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Uploads (keep this for development, but consider removing for production)
-# chainfly-backend/uploads/
-"@
-    $gitignoreContent | Out-File -FilePath ".gitignore" -Encoding UTF8
-}
-
-Write-Host "Ready for deployment!" -ForegroundColor Green
-Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "1. Push your code to GitHub:" -ForegroundColor White
-Write-Host "   git add ." -ForegroundColor Yellow
-Write-Host "   git commit -m 'Ready for Render deployment'" -ForegroundColor Yellow
-Write-Host "   git push origin main" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "2. Go to https://render.com and sign up" -ForegroundColor White
-Write-Host "3. Connect your GitHub repository" -ForegroundColor White
-Write-Host "4. Create a new Web Service for the backend" -ForegroundColor White
-Write-Host "5. Create a new Static Site for the frontend" -ForegroundColor White
-Write-Host ""
-Write-Host "See DEPLOYMENT_GUIDE.md for detailed instructions" -ForegroundColor Cyan 
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✅ Successfully pushed to GitHub!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "🎯 Next Steps:" -ForegroundColor Cyan
+    Write-Host "1. Go to https://dashboard.render.com/" -ForegroundColor White
+    Write-Host "2. Click 'New +' → 'Blueprint'" -ForegroundColor White
+    Write-Host "3. Connect your GitHub repository" -ForegroundColor White
+    Write-Host "4. Render will automatically detect render.yaml" -ForegroundColor White
+    Write-Host "5. Click 'Apply' to deploy both services" -ForegroundColor White
+    Write-Host ""
+    Write-Host "📚 For detailed instructions, see DEPLOYMENT_GUIDE.md" -ForegroundColor Yellow
+} else {
+    Write-Host "❌ Failed to push to GitHub. Please check your git configuration." -ForegroundColor Red
+} 

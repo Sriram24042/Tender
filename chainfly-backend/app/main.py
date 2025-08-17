@@ -30,6 +30,7 @@ allowed_origins = [
     "http://localhost:5178",
     "http://127.0.0.1:5178",
     "https://tendermanagementsystem.vercel.app",
+    "https://tender-n6vxitrmo-srirams-projects-1bbca8cb.vercel.app",  # Your Vercel domain
     "https://*.vercel.app",
     "https://*.vercel.app/*",
     "https://*.onrender.com",  # Render domains

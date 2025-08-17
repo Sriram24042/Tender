@@ -1,12 +1,31 @@
 services:
+  # Backend API Service
   - type: web
     name: chainfly-backend
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: chmod +x start.sh && ./start.sh
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
+      - key: ENVIRONMENT
+        value: production
     healthCheckPath: /
-    autoDeploy: true 
+    autoDeploy: true
+    sourceDir: chainfly-backend
+
+  # Frontend Service
+  - type: web
+    name: chainfly-frontend
+    env: static
+    plan: free
+    buildCommand: chmod +x build.sh && ./build.sh
+    staticPublishPath: ./dist
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://chainfly-backend.onrender.com
+    autoDeploy: true
+    sourceDir: frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html 
