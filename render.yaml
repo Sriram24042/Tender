@@ -4,6 +4,7 @@ services:
     name: chainfly-backend
     env: python
     plan: free
+    rootDir: chainfly-backend
     buildCommand: chmod +x build.sh && ./build.sh
     startCommand: chmod +x start.sh && ./start.sh
     envVars:
@@ -11,20 +12,19 @@ services:
         value: production
     healthCheckPath: /
     autoDeploy: true
-    sourceDir: chainfly-backend
 
   # Frontend Service
   - type: web
     name: chainfly-frontend
     env: static
     plan: free
+    rootDir: frontend
     buildCommand: chmod +x build.sh && ./build.sh
     staticPublishPath: ./dist
     envVars:
       - key: REACT_APP_API_URL
         value: https://chainfly-backend.onrender.com
     autoDeploy: true
-    sourceDir: frontend
     routes:
       - type: rewrite
         source: /*
