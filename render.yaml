@@ -11,4 +11,4 @@ services:
       - key: ENVIRONMENT
         value: production
     healthCheckPath: /
-    autoDeploy: true 
+    autoDeploy: true
