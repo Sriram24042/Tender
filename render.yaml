@@ -3,7 +3,7 @@ services:
   - type: web
     name: chainfly-backend
     env: python
-    plan: free
+    plan: starter
     buildCommand: cd chainfly-backend && pip install -r requirements.txt && mkdir -p uploads && chmod 755 uploads
     startCommand: gunicorn chainfly-backend.app.main:app --bind 0.0.0.0:$PORT --workers 1 --worker-class uvicorn.workers.UvicornWorker --timeout 120
     envVars:
@@ -16,7 +16,7 @@ services:
   - type: web
     name: chainfly-frontend
     env: static
-    plan: free
+    plan: starter
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
