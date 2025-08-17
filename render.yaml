@@ -4,8 +4,8 @@ services:
     name: chainfly-backend
     env: python
     plan: free
-    buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: chmod +x start.sh && ./start.sh
+    buildCommand: cd chainfly-backend && pip install -r requirements.txt && mkdir -p uploads && chmod 755 uploads
+    startCommand: gunicorn chainfly-backend.app.main:app --bind 0.0.0.0:$PORT --workers 1 --worker-class uvicorn.workers.UvicornWorker --timeout 120
     envVars:
       - key: ENVIRONMENT
         value: production
@@ -18,7 +18,7 @@ services:
     env: static
     plan: free
     rootDir: frontend
-    buildCommand: chmod +x build.sh && ./build.sh
+    buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     envVars:
       - key: REACT_APP_API_URL
