@@ -16,7 +16,7 @@ services:
   - type: web
     name: chainfly-frontend
     env: static
-    plan: starter
+    plan: Free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
@@ -29,3 +29,4 @@ services:
         source: /*
 
         destination: /index.html 
+
