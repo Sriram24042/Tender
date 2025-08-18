@@ -1,8 +1,8 @@
 # documents.py - Document-related endpoints will be defined here.
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Query
 import os
-from app.utils.file_utils import save_uploaded_file
+from app.services.file_service import save_file_to_mongodb, list_all_files, get_file_metadata, delete_file, get_file_content
 from typing import List, Dict
 import stat
 from sqlalchemy.orm import Session
@@ -10,6 +10,8 @@ from app.models.schemas import DownloadHistory, DownloadHistoryCreate
 from app.services.compliance import get_db
 import json
 import datetime
+from fastapi.responses import StreamingResponse
+import io
 
 router = APIRouter()
 
@@ -17,11 +19,12 @@ router = APIRouter()
 async def upload_document(
     tender_id: str = Form(...),
     document_type: str = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    store_in_gridfs: bool = Query(False, description="Store file content in MongoDB GridFS instead of filesystem")
 ):
     try:
-        file_path = save_uploaded_file(file, tender_id, document_type)
-        return {"message": "File uploaded successfully", "file_path": file_path}
+        result = await save_file_to_mongodb(file, tender_id, document_type, store_in_gridfs)
+        return {"message": "File uploaded successfully", "file_data": result}
     except Exception as e:
         # Log the error to console
         print(f"\u274c Error while uploading file: {e}")
@@ -29,43 +32,9 @@ async def upload_document(
 
 @router.get("/list")
 async def list_all_documents():
-    """List all documents in the uploads folder"""
+    """List all documents from MongoDB"""
     try:
-        uploads_dir = os.path.join(os.getcwd(), "uploads")
-        if not os.path.exists(uploads_dir):
-            return {"documents": []}
-        
-        documents = []
-        for filename in os.listdir(uploads_dir):
-            file_path = os.path.join(uploads_dir, filename)
-            if os.path.isfile(file_path):
-                # Get file stats
-                file_stat = os.stat(file_path)
-                
-                # Parse filename to extract tender_id and document_type
-                # Format: {tender_id}_{document_type}_{original_filename}
-                parts = filename.split('_', 2)
-                tender_id = parts[0] if len(parts) > 0 else "Unknown"
-                document_type = parts[1] if len(parts) > 1 else "Unknown"
-                
-                # Try to extract original filename (remove the prefix)
-                original_filename = filename
-                if len(parts) > 2:
-                    original_filename = parts[2]
-                
-                document = {
-                    "id": filename,  # Use filename as ID for existing files
-                    "filename": original_filename,
-                    "saved_filename": filename,
-                    "tender_id": tender_id,
-                    "document_type": document_type,
-                    "file_path": file_path,
-                    "file_size": file_stat.st_size,
-                    "uploaded_at": file_stat.st_mtime,  # Unix timestamp
-                    "status": "completed"
-                }
-                documents.append(document)
-        
+        documents = await list_all_files()
         return {"documents": documents}
     except Exception as e:
         print(f"Error listing documents: {e}")
@@ -124,4 +93,50 @@ async def clear_download_history(db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         print(f"Error clearing download history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# MongoDB-based file operations
+@router.get("/{file_id}")
+async def get_document_metadata(file_id: str):
+    """Get document metadata by file ID"""
+    try:
+        metadata = await get_file_metadata(file_id)
+        if not metadata:
+            raise HTTPException(status_code=404, detail="File not found")
+        return metadata
+    except Exception as e:
+        print(f"Error getting document metadata: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{file_id}/download")
+async def download_document(file_id: str):
+    """Download document by file ID"""
+    try:
+        metadata = await get_file_metadata(file_id)
+        if not metadata:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        file_content = await get_file_content(file_id)
+        if not file_content:
+            raise HTTPException(status_code=404, detail="File content not found")
+        
+        return StreamingResponse(
+            io.BytesIO(file_content),
+            media_type=metadata.get("content_type", "application/pdf"),
+            headers={"Content-Disposition": f"attachment; filename={metadata['original_filename']}"}
+        )
+    except Exception as e:
+        print(f"Error downloading document: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{file_id}")
+async def delete_document(file_id: str):
+    """Delete document by file ID"""
+    try:
+        success = await delete_file(file_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="File not found")
+        return {"status": "success", "message": "File deleted successfully"}
+    except Exception as e:
+        print(f"Error deleting document: {e}")
         raise HTTPException(status_code=500, detail=str(e))

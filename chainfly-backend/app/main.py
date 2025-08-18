@@ -4,6 +4,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 from app.routes import tenders, documents, reminders
+from dotenv import load_dotenv
+from app.services.mongodb import connect_to_mongo, close_mongo_connection, ping_mongo
+
+load_dotenv()
 
 app = FastAPI(
     title="Chainfly Tender & Document API",
@@ -35,8 +39,6 @@ allowed_origins = [
     "https://*.vercel.app",
     "https://*.vercel.app/*",
     "https://*.onrender.com",  # Render domains
-    "https://*.railway.app",   # Railway domains
-    "https://*.herokuapp.com", # Heroku domains
 ]
 
 # Add production origins if available
@@ -52,6 +54,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def _startup() -> None:
+    await connect_to_mongo()
+
+@app.on_event("shutdown")
+async def _shutdown() -> None:
+    await close_mongo_connection()
+
 # Root endpoint
 @app.get("/")
 def read_root():
@@ -60,6 +70,11 @@ def read_root():
         "environment": ENVIRONMENT,
         "port": PORT
     }
+
+@app.get("/health/mongo")
+async def mongo_health():
+    result = await ping_mongo()
+    return {"status": "ok", "ping": result}
 
 # Mount static files for uploads
 uploads_dir = os.path.join(os.getcwd(), "uploads")
