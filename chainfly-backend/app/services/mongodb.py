@@ -28,14 +28,16 @@ async def connect_to_mongo() -> None:
 		# Configure client with SSL settings for MongoDB Atlas
 		mongo_client = AsyncIOMotorClient(
 			uri, 
-			serverSelectionTimeoutMS=10000,
-			connectTimeoutMS=10000,
-			socketTimeoutMS=10000,
+			serverSelectionTimeoutMS=15000,
+			connectTimeoutMS=15000,
+			socketTimeoutMS=15000,
 			tls=True,
-			tlsAllowInvalidCertificates=False,
-			tlsAllowInvalidHostnames=False,
+			tlsAllowInvalidCertificates=True,  # Allow invalid certs for testing
+			tlsAllowInvalidHostnames=True,     # Allow invalid hostnames for testing
 			retryWrites=True,
-			w="majority"
+			w="majority",
+			maxPoolSize=10,
+			minPoolSize=1
 		)
 		
 		# Ensure we can talk to the cluster

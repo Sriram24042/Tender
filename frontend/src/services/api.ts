@@ -8,7 +8,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Increased timeout for file uploads
   headers: {
     'Content-Type': 'application/json',
   },
@@ -81,12 +81,29 @@ export const tenderAPI = {
 export const documentAPI = {
   // Upload document
   upload: async (formData: FormData) => {
-    const response = await api.post('/documents/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    try {
+      console.log('🚀 Attempting to upload to:', API_BASE_URL + '/documents/upload');
+      const response = await api.post('/documents/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 60000, // 60 seconds for file uploads
+      });
+      console.log('✅ Upload successful:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Upload failed:', error);
+      if (error.code === 'ECONNABORTED') {
+        throw new Error('Upload timeout - please try again');
+      }
+      if (error.response?.status === 413) {
+        throw new Error('File too large - please use a smaller file');
+      }
+      if (error.response?.status === 0 || error.message === 'Network Error') {
+        throw new Error('Cannot connect to server - please check your internet connection');
+      }
+      throw error;
+    }
   },
 
   // Get all documents from uploads folder

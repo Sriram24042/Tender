@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
+import datetime
 from app.routes import tenders, documents, reminders
 from dotenv import load_dotenv
 from app.services.mongodb import connect_to_mongo, close_mongo_connection, ping_mongo
@@ -75,8 +76,20 @@ def read_root():
 
 @app.get("/health/mongo")
 async def mongo_health():
-    result = await ping_mongo()
-    return {"status": "ok", "ping": result}
+    try:
+        result = await ping_mongo()
+        return {"status": "ok", "ping": result, "mongo_available": True}
+    except Exception as e:
+        return {"status": "error", "message": str(e), "mongo_available": False}
+
+@app.get("/health")
+async def health_check():
+    """Simple health check endpoint"""
+    return {
+        "status": "ok", 
+        "timestamp": datetime.datetime.utcnow().isoformat(),
+        "environment": ENVIRONMENT
+    }
 
 # Mount static files for uploads
 uploads_dir = os.path.join(os.getcwd(), "uploads")
