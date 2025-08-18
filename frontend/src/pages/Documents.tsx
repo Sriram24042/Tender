@@ -76,19 +76,20 @@ const Documents = () => {
         
         console.log('Upload response:', response);
         
-        // Extract filename from the saved file path
-        const savedFilename = response.file_path.split('\\').pop() || file.name;
+        // Handle new MongoDB response format
+        const fileData = response.file_data || response;
+        const savedFilename = fileData.stored_filename || file.name;
         
         // Add to context
         const newDocument = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          id: fileData.file_id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
           tender_id: tenderId,
           document_type: documentType,
           filename: file.name,
-          file_path: response.file_path,
+          file_path: fileData.stored_filename || file.name,
           saved_filename: savedFilename,
-          file_size: file.size,
-          uploaded_at: new Date().toISOString(),
+          file_size: fileData.file_size || file.size,
+          uploaded_at: fileData.uploaded_at || new Date().toISOString(),
           status: 'completed' as const,
         };
         
@@ -130,7 +131,7 @@ const Documents = () => {
       for (const doc of selectedDocs) {
         try {
           const filename = doc.saved_filename || doc.file_path.split('\\').pop() || doc.filename;
-          const downloadUrl = `http://localhost:8000/files/${filename}`;
+          const downloadUrl = `${import.meta.env.VITE_API_BASE_URL || 'https://chainfly-backend.onrender.com'}/files/${filename}`;
           
           console.log('Downloading file for ZIP:', filename, 'URL:', downloadUrl);
           
@@ -187,7 +188,7 @@ const Documents = () => {
 
   const handleViewFile = (doc: any) => {
     const filename = doc.saved_filename || doc.file_path.split('\\').pop() || doc.filename;
-    const viewUrl = `http://localhost:8000/files/${filename}`;
+    const viewUrl = `${import.meta.env.VITE_API_BASE_URL || 'https://chainfly-backend.onrender.com'}/files/${filename}`;
     
     console.log('Viewing file:', filename, 'URL:', viewUrl);
     
@@ -196,7 +197,7 @@ const Documents = () => {
 
   const handleDownloadFile = (doc: any) => {
     const filename = doc.saved_filename || doc.file_path.split('\\').pop() || doc.filename;
-    const downloadUrl = `http://localhost:8000/files/${filename}`;
+    const downloadUrl = `${import.meta.env.VITE_API_BASE_URL || 'https://chainfly-backend.onrender.com'}/files/${filename}`;
     
     console.log('Downloading file:', filename, 'URL:', downloadUrl);
     

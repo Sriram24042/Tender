@@ -39,6 +39,8 @@ allowed_origins = [
     "https://*.vercel.app",
     "https://*.vercel.app/*",
     "https://*.onrender.com",  # Render domains
+    "https://tender-management-system-frontend.vercel.app",  # Add your current Vercel frontend
+    "https://tender-management-system.vercel.app",  # Alternative Vercel domain
 ]
 
 # Add production origins if available
@@ -95,6 +97,32 @@ async def download_file(filename: str):
     else:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="File not found")
+
+# MongoDB file download endpoint
+@app.get("/files/mongo/{file_id}")
+async def download_file_by_id(file_id: str):
+    """Download file by MongoDB file ID"""
+    try:
+        from app.services.file_service import get_file_content, get_file_metadata
+        import io
+        from fastapi.responses import StreamingResponse
+        
+        file_content = await get_file_content(file_id)
+        if not file_content:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        metadata = await get_file_metadata(file_id)
+        if not metadata:
+            raise HTTPException(status_code=404, detail="File metadata not found")
+        
+        return StreamingResponse(
+            io.BytesIO(file_content),
+            media_type=metadata.get("content_type", "application/pdf"),
+            headers={"Content-Disposition": f"attachment; filename={metadata['original_filename']}"}
+        )
+    except Exception as e:
+        print(f"Error downloading file by ID: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
