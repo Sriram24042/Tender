@@ -22,31 +22,52 @@ async def connect_to_mongo() -> None:
 	global mongo_client, mongo_db
 	if mongo_client is not None:
 		return
+	
 	uri = _get_mongo_uri()
+	print(f"🔗 Attempting to connect to MongoDB...")
+	print(f"📝 URI format check: {'mongodb+srv://' in uri or 'mongodb://' in uri}")
 	
 	try:
-		# Configure client with SSL settings for MongoDB Atlas
+		# Configure client with optimized settings for MongoDB Atlas
 		mongo_client = AsyncIOMotorClient(
 			uri, 
-			serverSelectionTimeoutMS=15000,
-			connectTimeoutMS=15000,
-			socketTimeoutMS=15000,
-			tls=True,
-			tlsAllowInvalidCertificates=True,  # Allow invalid certs for testing
-			tlsAllowInvalidHostnames=True,     # Allow invalid hostnames for testing
+			serverSelectionTimeoutMS=30000,  # Increased timeout
+			connectTimeoutMS=30000,
+			socketTimeoutMS=30000,
+			maxPoolSize=10,
+			minPoolSize=1,
 			retryWrites=True,
 			w="majority",
-			maxPoolSize=10,
-			minPoolSize=1
+			# SSL settings for Atlas
+			tls=True,
+			tlsAllowInvalidCertificates=False,  # Use proper SSL
+			tlsAllowInvalidHostnames=False,
+			# Connection pooling
+			maxIdleTimeMS=30000,
+			# Heartbeat settings
+			heartbeatFrequencyMS=10000,
+			# App name for monitoring
+			appName="Chainfly-Tender-App"
 		)
 		
-		# Ensure we can talk to the cluster
+		# Test the connection
+		print("🔄 Testing MongoDB connection...")
 		await mongo_client.admin.command("ping")
-		mongo_db = mongo_client[_get_database_name()]
-		print("✅ MongoDB connected successfully!")
+		
+		# Get database
+		db_name = _get_database_name()
+		mongo_db = mongo_client[db_name]
+		
+		# Test database access
+		await mongo_db.command("ping")
+		
+		print(f"✅ MongoDB connected successfully!")
+		print(f"📊 Database: {db_name}")
+		print(f"🔗 Connection pool: {mongo_client.max_pool_size} max connections")
 		
 	except Exception as e:
 		print(f"⚠️  MongoDB connection failed: {e}")
+		print(f"🔍 Error type: {type(e).__name__}")
 		print("📝 The app will start without MongoDB. File uploads will use local filesystem only.")
 		mongo_client = None
 		mongo_db = None

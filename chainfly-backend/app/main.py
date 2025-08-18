@@ -6,7 +6,7 @@ import os
 import datetime
 from app.routes import tenders, documents, reminders
 from dotenv import load_dotenv
-from app.services.mongodb import connect_to_mongo, close_mongo_connection, ping_mongo
+from app.services.mongodb import connect_to_mongo, close_mongo_connection, ping_mongo, _get_database_name
 
 load_dotenv()
 
@@ -78,9 +78,21 @@ def read_root():
 async def mongo_health():
     try:
         result = await ping_mongo()
-        return {"status": "ok", "ping": result, "mongo_available": True}
+        return {
+            "status": "ok", 
+            "ping": result, 
+            "mongo_available": True,
+            "database": _get_database_name(),
+            "connection_pool": "active"
+        }
     except Exception as e:
-        return {"status": "error", "message": str(e), "mongo_available": False}
+        return {
+            "status": "error", 
+            "message": str(e), 
+            "mongo_available": False,
+            "error_type": type(e).__name__,
+            "database": _get_database_name() if 'mongo_db' in globals() and mongo_db else "unknown"
+        }
 
 @app.get("/health")
 async def health_check():

@@ -34,12 +34,18 @@ async def save_file_to_mongodb(
             detail=f"Only PDF files are allowed. Received: {upload_file.filename}"
         )
     
+    # Check MongoDB availability
+    mongo_available = False
     try:
         db = get_mongo_db()
+        # Test the connection
+        await db.command("ping")
         mongo_available = True
-    except RuntimeError:
+        print("✅ MongoDB is available for file operations")
+    except Exception as e:
         mongo_available = False
-        print("⚠️  MongoDB not available, using filesystem only")
+        print(f"⚠️  MongoDB not available: {e}")
+        print("📝 Using filesystem storage only")
     
     # Generate unique file ID
     file_id = str(uuid.uuid4())
