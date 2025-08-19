@@ -94,6 +94,50 @@ async def mongo_health():
             "database": _get_database_name() if 'mongo_db' in globals() and mongo_db else "unknown"
         }
 
+@app.get("/health/gridfs")
+async def gridfs_health():
+    """Check GridFS storage status"""
+    try:
+        from app.services.mongodb import get_mongo_db
+        from motor.motor_asyncio import AsyncIOMotorGridFSBucket
+        
+        db = get_mongo_db()
+        fs = AsyncIOMotorGridFSBucket(db)
+        
+        # Test GridFS by creating a small test file
+        test_content = b"GridFS test file"
+        test_filename = f"test_{datetime.datetime.now().isoformat()}.txt"
+        
+        # Upload test file
+        file_id = await fs.upload_from_stream(
+            test_filename,
+            test_content,
+            metadata={"test": True}
+        )
+        
+        # Download and verify
+        download_stream = await fs.open_download_stream(file_id)
+        downloaded_content = await download_stream.read()
+        
+        # Clean up test file
+        await fs.delete(file_id)
+        
+        return {
+            "status": "ok",
+            "gridfs_available": True,
+            "test_file_upload": "success",
+            "test_file_download": "success",
+            "test_file_cleanup": "success",
+            "message": "GridFS is working properly"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "gridfs_available": False,
+            "message": str(e),
+            "error_type": type(e).__name__
+        }
+
 @app.get("/health")
 async def health_check():
     """Simple health check endpoint"""

@@ -22,7 +22,7 @@ async def save_file_to_mongodb(
     upload_file: UploadFile, 
     tender_id: str, 
     document_type: str,
-    store_in_gridfs: bool = False
+    store_in_gridfs: bool = True
 ) -> Dict[str, Any]:
     """
     Save file metadata to MongoDB and optionally store file content in GridFS

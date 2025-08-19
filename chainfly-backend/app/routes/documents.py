@@ -20,7 +20,7 @@ async def upload_document(
     tender_id: str = Form(...),
     document_type: str = Form(...),
     file: UploadFile = File(...),
-    store_in_gridfs: bool = Query(False, description="Store file content in MongoDB GridFS instead of filesystem")
+    store_in_gridfs: bool = Query(True, description="Store file content in MongoDB GridFS instead of filesystem")
 ):
     try:
         result = await save_file_to_mongodb(file, tender_id, document_type, store_in_gridfs)
