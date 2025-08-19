@@ -19,30 +19,12 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
 
 # Add CORS middleware with dynamic origins
 allowed_origins = [
-    "http://localhost:5173", 
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174", 
-    "http://localhost:5175",
-    "http://127.0.0.1:5175",
-    "http://localhost:5176",
-    "http://127.0.0.1:5176",
-    "http://localhost:5177",
-    "http://127.0.0.1:5177",
-    "http://localhost:5178",
-    "http://127.0.0.1:5178",
-    "https://tendermanagementsystem.vercel.app",
-    "https://tender-n6vxitrmo-srirams-projects-1bbca8cb.vercel.app",  # Your Vercel domain
-    "https://*.vercel.app",
-    "https://*.vercel.app/*",
-    "https://*.onrender.com",  # Render domains
-    "https://*.railway.app",   # Railway domains
-    "https://*.herokuapp.com", # Heroku domains
+    "https://tender-jade-sigma.vercel.app/", # Your Vercel domain
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["https://tender-jade-sigma.vercel.app/"],  # Add your Vercel domain here
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
